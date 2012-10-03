@@ -15,7 +15,7 @@ For easy printing of ascii tables within python
         table.set_cols_valign(["t", "m", "b"])
         table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", "Nickname"],
                      ["Mr\nXavier\nHuon", 32, "Xav'"],
-                     ["Mr\nBaptiste\nClement", 1, "Baby"] ])
+                     [get_color_string(bcolors.BLUE,"Mr\nBaptiste\nClement"), 1, get_color_string(bcolors.RED,"Baby")] ])
         print table.draw() + "\\n"
 
         table = Texttable()
