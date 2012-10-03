@@ -35,19 +35,8 @@ For easy printing of ascii tables within python
 
 # Result:
 
-        "Name Of Person" is in GREEN, but markdown doesn't seem to support colors, or I don't want to find it
+![texttable results](http://i.imgur.com/gHZrl.png)
 
-        +----------------+-----+----------+
-        | Name Of Person | Age | Nickname |
-        +================+=====+==========+
-        | Mr             |     |          |
-        | Xavier         |  32 |          |
-        | Huon           |     |   Xav'   |
-        +----------------+-----+----------+
-        | Mr             |     |          |
-        | Baptiste       |   1 |          |
-        | Clement        |     |   Baby   |
-        +----------------+-----+----------+
 
         text   float       exp      int     auto
         ===========================================
