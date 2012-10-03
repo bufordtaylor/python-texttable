@@ -35,12 +35,4 @@ For easy printing of ascii tables within python
 
 # Result:
 
-![texttable results](http://i.imgur.com/gHZrl.png)
-
-
-        text   float       exp      int     auto
-        ===========================================
-        abcd   67.000   6.540e+02   89    128.001
-        efgh   67.543   6.540e-01   90    1.280e+22
-        ijkl   0.000    5.000e-78   89    0.000
-        mnop   0.023    5.000e+78   92    1.280e+22
+![texttable results](http://i.imgur.com/Zu7FB.png)
