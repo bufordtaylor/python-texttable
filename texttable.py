@@ -476,7 +476,7 @@ class Texttable:
         """
 
         for attr in bcolors_public_props():
-            cell= cell.replace(getattr(bcolors, attr), '')
+            cell = cell.replace(getattr(bcolors, attr), '').replace(bcolors.ENDC,'')
 
         cell_lines = cell.split('\n')
         maxi = 0
@@ -543,7 +543,23 @@ class Texttable:
             for cell, width, align in zip(line, self._width, self._align):
                 length += 1
                 cell_line = cell[i]
+                lost_color = bcolors.WHITE
+                original_cell = cell_line
+                for attr in bcolors_public_props():
+                    cell_line = cell_line.replace(
+                        getattr(bcolors, attr), '').replace(bcolors.ENDC,''
+                    )
+                    if cell_line.replace(bcolors.ENDC,'') != original_cell.replace(
+                            bcolors.ENDC,'') and attr != 'ENDC':
+                        if not lost_color:
+                            lost_color = attr
                 fill = width - len(cell_line)
+                try:
+                    cell_line = get_color_string(
+                        getattr(bcolors, lost_color),cell_line
+                    )
+                except AttributeError:
+                    pass
                 if isheader:
                     align = "c"
                 if align == "r":
@@ -571,8 +587,10 @@ class Texttable:
             original_cell = cell
             lost_color = bcolors.WHITE
             for attr in bcolors_public_props():
-                cell = cell.replace(getattr(bcolors, attr), '')
-                if cell != original_cell and attr != 'ENDC':
+                cell = cell.replace(
+                    getattr(bcolors, attr), '').replace(bcolors.ENDC,'')
+                if cell.replace(bcolors.ENDC,'') != original_cell.replace(
+                        bcolors.ENDC,'') and attr != 'ENDC':
                     if not lost_color:
                         lost_color = attr
             for c in cell.split('\n'):
@@ -583,7 +601,10 @@ class Texttable:
                     c = unicode(c, 'utf', 'replace')
                 try:
                     array.extend(
-                        [get_color_string(getattr(bcolors, lost_color),x) for x in  textwrap.wrap(c, width)]
+                        [get_color_string(
+                            getattr(bcolors, lost_color),x
+                            ) for x in  textwrap.wrap(c, width)
+                        ]
                     )
                 except AttributeError:
                     array.extend(textwrap.wrap(c, width))
@@ -608,7 +629,7 @@ if __name__ == '__main__':
     table.set_cols_valign(["t", "m", "b"])
     table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", "Nickname"],
                      ["Mr\nXavier\nHuon", 32, "Xav'"],
-                     ["Mr\nBaptiste\nClement", 1, "Baby"] ])
+                     [get_color_string(bcolors.BLUE,"Mr\nBaptiste\nClement"), 1, get_color_string(bcolors.RED,"Baby")] ])
     print table.draw() + "\n"
 
     table = Texttable()
