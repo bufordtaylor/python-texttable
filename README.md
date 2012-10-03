@@ -13,9 +13,9 @@ For easy printing of ascii tables within python
         table = Texttable()
         table.set_cols_align(["l", "r", "c"])
         table.set_cols_valign(["t", "m", "b"])
-        table.add_rows([ ["Name", "Age", "Nickname"],
-                         ["Mr\\nXavier\\nHuon", 32, "Xav'"],
-                         ["Mr\\nBaptiste\\nClement", 1, "Baby"] ])
+        table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", "Nickname"],
+                     ["Mr\nXavier\nHuon", 32, "Xav'"],
+                     ["Mr\nBaptiste\nClement", 1, "Baby"] ])
         print table.draw() + "\\n"
 
         table = Texttable()
@@ -35,17 +35,19 @@ For easy printing of ascii tables within python
 
 # Result:
 
-        +----------+-----+----------+
-        |   Name   | Age | Nickname |
-        +==========+=====+==========+
-        | Mr       |     |          |
-        | Xavier   |  32 |          |
-        | Huon     |     |   Xav'   |
-        +----------+-----+----------+
-        | Mr       |     |          |
-        | Baptiste |   1 |          |
-        | Clement  |     |   Baby   |
-        +----------+-----+----------+
+        "Name Of Person" is in GREEN, but markdown doesn't seem to support colors, or I don't want to find it
+
+        +----------------+-----+----------+
+        | Name Of Person | Age | Nickname |
+        +================+=====+==========+
+        | Mr             |     |          |
+        | Xavier         |  32 |          |
+        | Huon           |     |   Xav'   |
+        +----------------+-----+----------+
+        | Mr             |     |          |
+        | Baptiste       |   1 |          |
+        | Clement        |     |   Baby   |
+        +----------------+-----+----------+
 
         text   float       exp      int     auto
         ===========================================
