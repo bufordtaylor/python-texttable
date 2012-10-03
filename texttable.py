@@ -131,6 +131,24 @@ class ArraySizeError(Exception):
     def __str__(self):
         return self.msg
 
+class bcolors:
+    PURPLE = '\033[95m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+    WHITE = ''
+
+def bcolors_public_props():
+    return (name for name in dir(bcolors) if not name.startswith('_'))
+
+def get_color_string(type, string):
+    end = bcolors.ENDC
+    if type == bcolors.WHITE:
+        end = ''
+    return '%s%s%s' % (type, string, end)
+
 class Texttable:
 
     BORDER = 1
@@ -320,8 +338,6 @@ class Texttable:
         for row in rows:
             self.add_row(row)
 
-        self._compute_cols_width()
-        self._check_align()
 
     def draw(self):
         """Draw the table
@@ -331,6 +347,8 @@ class Texttable:
 
         if not self._header and not self._rows:
             return
+        self._compute_cols_width()
+        self._check_align()
         out = ""
         if self._has_border():
             out += self._hline()
@@ -457,12 +475,17 @@ class Texttable:
         cell, such like newlines and tabs
         """
 
+        for attr in bcolors_public_props():
+            cell= cell.replace(getattr(bcolors, attr), '')
+
         cell_lines = cell.split('\n')
         maxi = 0
         for line in cell_lines:
             length = 0
             parts = line.split('\t')
             for part, i in zip(parts, range(1, len(parts) + 1)):
+                for attr in bcolors_public_props():
+                    part = part.replace(getattr(bcolors, attr), '')
                 length = length + len(part)
                 if i < len(parts):
                     length = (length/8 + 1) * 8
@@ -545,13 +568,25 @@ class Texttable:
         line_wrapped = []
         for cell, width in zip(line, self._width):
             array = []
+            original_cell = cell
+            lost_color = bcolors.WHITE
+            for attr in bcolors_public_props():
+                cell = cell.replace(getattr(bcolors, attr), '')
+                if cell != original_cell and attr != 'ENDC':
+                    if not lost_color:
+                        lost_color = attr
             for c in cell.split('\n'):
                 try:
                     c = unicode(c, 'utf')
                 except UnicodeDecodeError, strerror:
                     sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
                     c = unicode(c, 'utf', 'replace')
-                array.extend(textwrap.wrap(c, width))
+                try:
+                    array.extend(
+                        [get_color_string(getattr(bcolors, lost_color),x) for x in  textwrap.wrap(c, width)]
+                    )
+                except AttributeError:
+                    array.extend(textwrap.wrap(c, width))
             line_wrapped.append(array)
         max_cell_lines = reduce(max, map(len, line_wrapped))
         for cell, valign in zip(line_wrapped, self._valign):
@@ -571,7 +606,7 @@ if __name__ == '__main__':
     table = Texttable()
     table.set_cols_align(["l", "r", "c"])
     table.set_cols_valign(["t", "m", "b"])
-    table.add_rows([ ["Name", "Age", "Nickname"],
+    table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", "Nickname"],
                      ["Mr\nXavier\nHuon", 32, "Xav'"],
                      ["Mr\nBaptiste\nClement", 1, "Baby"] ])
     print table.draw() + "\n"
@@ -584,7 +619,7 @@ if __name__ == '__main__':
                           'i',  # integer
                           'a']) # automatic
     table.set_cols_align(["l", "r", "r", "r", "l"])
-    table.add_rows([["text",    "float", "exp", "int", "auto"],
+    table.add_rows([['text',    "float", "exp", "int", "auto"],
                     ["abcd",    "67",    654,   89,    128.001],
                     ["efghijk", 67.5434, .654,  89.6,  12800000000000000000000.00023],
                     ["lmn",     5e-78,   5e-78, 89.4,  .000000000000128],
