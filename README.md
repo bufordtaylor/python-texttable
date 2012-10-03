@@ -3,6 +3,10 @@ python-texttable
 
 For easy printing of ascii tables within python
 
+# Installation:
+
+        pip install -U git+http://github.com/bufordtaylor/python-texttable
+
 
 # Example:
 

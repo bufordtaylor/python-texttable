@@ -25,14 +25,14 @@ Example:
     table = Texttable()
     table.set_cols_align(["l", "r", "c"])
     table.set_cols_valign(["t", "m", "b"])
-    table.add_rows([ ["Name", "Age", "Nickname"], 
+    table.add_rows([ ["Name", "Age", "Nickname"],
                      ["Mr\\nXavier\\nHuon", 32, "Xav'"],
                      ["Mr\\nBaptiste\\nClement", 1, "Baby"] ])
     print table.draw() + "\\n"
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
-    table.set_cols_dtype(['t',  # text 
+    table.set_cols_dtype(['t',  # text
                           'f',  # float (decimal)
                           'e',  # float (exponent)
                           'i',  # integer
@@ -114,7 +114,7 @@ def len(iterable):
     """
     if not isinstance(iterable, str):
         return iterable.__len__()
-    
+
     try:
         return len(unicode(iterable, 'utf'))
     except:
@@ -294,7 +294,7 @@ class Texttable:
 
         if not hasattr(self, "_dtype"):
             self._dtype = ["a"] * self._row_size
-            
+
         cells = []
         for i,x in enumerate(array):
             cells.append(self._str(i,x))
@@ -309,7 +309,7 @@ class Texttable:
           of the table
         """
 
-        # nb: don't use 'iter' on by-dimensional arrays, to get a 
+        # nb: don't use 'iter' on by-dimensional arrays, to get a
         #     usable code for python 2.1
         if header:
             if hasattr(rows, '__iter__') and hasattr(rows, 'next'):
@@ -320,6 +320,9 @@ class Texttable:
         for row in rows:
             self.add_row(row)
 
+        self._compute_cols_width()
+        self._check_align()
+
     def draw(self):
         """Draw the table
 
@@ -328,8 +331,6 @@ class Texttable:
 
         if not self._header and not self._rows:
             return
-        self._compute_cols_width()
-        self._check_align()
         out = ""
         if self._has_border():
             out += self._hline()
@@ -350,7 +351,7 @@ class Texttable:
     def _str(self, i, x):
         """Handles string formatting of cell data
 
-            i - index of the cell datatype in self._dtype 
+            i - index of the cell datatype in self._dtype
             x - cell data to format
         """
         try:
@@ -570,14 +571,14 @@ if __name__ == '__main__':
     table = Texttable()
     table.set_cols_align(["l", "r", "c"])
     table.set_cols_valign(["t", "m", "b"])
-    table.add_rows([ ["Name", "Age", "Nickname"], 
+    table.add_rows([ ["Name", "Age", "Nickname"],
                      ["Mr\nXavier\nHuon", 32, "Xav'"],
                      ["Mr\nBaptiste\nClement", 1, "Baby"] ])
     print table.draw() + "\n"
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
-    table.set_cols_dtype(['t',  # text 
+    table.set_cols_dtype(['t',  # text
                           'f',  # float (decimal)
                           'e',  # float (exponent)
                           'i',  # integer
