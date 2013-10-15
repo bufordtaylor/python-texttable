@@ -6,6 +6,9 @@ For easy printing of ascii tables within python
 # Installation:
 
         pip install -U git+http://github.com/bufordtaylor/python-texttable
+On debian sid
+
+        apt-get install python-texttable
 
 
 # Example:
