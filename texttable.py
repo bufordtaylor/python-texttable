@@ -90,6 +90,7 @@ Brian Peterson:
     - better handling of unicode errors
 """
 
+import math
 import sys
 import string
 
@@ -514,8 +515,55 @@ class Texttable:
         items = len(maxi)
         length = reduce(lambda x,y: x+y, maxi)
         if self._max_width and length + items * 3 + 1 > self._max_width:
+            max_lengths = maxi
             maxi = [(self._max_width - items * 3 -1) / items \
                 for n in range(items)]
+
+            # free space to distribute
+            free = 0
+
+            # how many columns are oversized
+            oversized = 0
+
+            # reduce size of columns that need less space and calculate how
+            # much space is freed
+            for col, max_len in enumerate(max_lengths):
+                current_length = maxi[col]
+
+                # column needs less space, adjust and
+                # update free space
+                if current_length > max_len:
+                    free += current_length - max_len
+                    maxi[col] = max_len
+
+                # column needs more space, count it
+                elif max_len > current_length:
+                    oversized += 1
+
+            # as long as free space is available, distribute it
+            while free > 0:
+                # available free space for each oversized column
+                free_part = int(math.ceil(float(free) / float(oversized)))
+
+                for col, max_len in enumerate(max_lengths):
+                    current_length = maxi[col]
+
+                    # column needs more space
+                    if current_length < max_len:
+
+                        # how much space is needed
+                        needed = max_len - current_length
+
+                        # enough free space for column
+                        if needed <= free_part:
+                            maxi[col] = max_len
+                            free -= needed
+                            oversized -= 1
+
+                        # still oversized after re-sizing
+                        else:
+                            maxi[col] = maxi[col] + free_part
+                            free -= free_part
         self._width = maxi
 
     def _check_align(self):
