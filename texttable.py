@@ -376,7 +376,10 @@ class Texttable:
         try:
             f = float(x)
         except:
-            return str(x)
+            if type(x) is unicode:
+                return x
+            else:
+                return str(x)
 
         n = self._precision
         dtype = self._dtype[i]
@@ -388,7 +391,10 @@ class Texttable:
         elif dtype == 'e':
             return '%.*e' % (n, f)
         elif dtype == 't':
-            return str(x)
+            if type(x) is unicode:
+                return x
+            else:
+                return str(x)
         else:
             if f - round(f) == 0:
                 if abs(f) > 1e8:
@@ -642,11 +648,12 @@ class Texttable:
                     if not lost_color:
                         lost_color = attr
             for c in cell.split('\n'):
-                try:
-                    c = unicode(c, 'utf')
-                except UnicodeDecodeError, strerror:
-                    sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
-                    c = unicode(c, 'utf', 'replace')
+                if type(c) is not unicode:
+                    try:
+                        c = unicode(c, 'utf')
+                    except UnicodeDecodeError, strerror:
+                        sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
+                        c = unicode(c, 'utf', 'replace')
                 try:
                     array.extend(
                         [get_color_string(
