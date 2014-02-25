@@ -467,7 +467,7 @@ class Texttable:
         s = "%s%s%s" % (horiz, [horiz, self._char_corner][self._has_vlines()],
             horiz)
         # build the line
-        l = string.join([horiz * n for n in self._width], s)
+        l = s.join([horiz * n for n in self._width])
         # add border if needed
         if self._has_border():
             l = "%s%s%s%s%s\n" % (self._char_corner, horiz, l, horiz,
@@ -496,7 +496,7 @@ class Texttable:
                     part = part.replace(getattr(bcolors, attr), '')
                 length = length + len(part)
                 if i < len(parts):
-                    length = (length/8 + 1) * 8
+                    length = (length//8 + 1) * 8
             maxi = max(maxi, length)
         return maxi
 
@@ -523,7 +523,7 @@ class Texttable:
         length = reduce(lambda x,y: x+y, maxi)
         if self._max_width and length + items * 3 + 1 > self._max_width:
             max_lengths = maxi
-            maxi = [(self._max_width - items * 3 -1) / items \
+            maxi = [(self._max_width - items * 3 -1) // items \
                 for n in range(items)]
 
             # free space to distribute
