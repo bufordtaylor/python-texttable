@@ -615,8 +615,8 @@ class Texttable:
                 if align == "r":
                     out += "%s " % (fill * space + cell_line)
                 elif align == "c":
-                    out += "%s " % (fill/2 * space + cell_line \
-                            + (fill/2 + fill%2) * space)
+                    out += "%s " % (fill//2 * space + cell_line \
+                            + (fill//2 + fill%2) * space)
                 else:
                     out += "%s " % (cell_line + fill * space)
                 if length < len(line):
