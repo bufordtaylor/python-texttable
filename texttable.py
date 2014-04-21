@@ -666,8 +666,8 @@ class Texttable:
                 valign = "t"
             if valign == "m":
                 missing = max_cell_lines - len(cell)
-                cell[:0] = [""] * (missing / 2)
-                cell.extend([""] * (missing / 2 + missing % 2))
+                cell[:0] = [""] * (missing // 2)
+                cell.extend([""] * (missing // 2 + missing % 2))
             elif valign == "b":
                 cell[:0] = [""] * (max_cell_lines - len(cell))
             else:
