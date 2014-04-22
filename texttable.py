@@ -93,6 +93,7 @@ Brian Peterson:
 import math
 import sys
 import string
+from functools import reduce
 
 try:
     if sys.version >= '2.3':
@@ -105,11 +106,6 @@ except ImportError:
     sys.stderr.write("Can't import textwrap module!\n")
     raise
 
-try:
-    True, False
-except NameError:
-    (True, False) = (1, 0)
-
 def len(iterable):
     """Redefining len here so it will be able to work with non-ASCII characters
     """
@@ -117,7 +113,7 @@ def len(iterable):
         return iterable.__len__()
 
     try:
-        return len(unicode(iterable, 'utf'))
+        return len(str(iterable, 'utf'))
     except:
         return iterable.__len__()
 
@@ -198,7 +194,7 @@ class Texttable:
         """
 
         if len(array) != 4:
-            raise ArraySizeError, "array should contain 4 characters"
+            raise ArraySizeError("array should contain 4 characters")
         array = [ x[:1] for x in [ str(s) for s in array ] ]
         (self._char_horiz, self._char_vert,
             self._char_corner, self._char_header) = array
@@ -276,7 +272,7 @@ class Texttable:
 
         self._check_row_size(array)
         try:
-            array = map(int, array)
+            array = list(map(int, array))
             if reduce(min, array) <= 0:
                 raise ValueError
         except ValueError:
@@ -301,7 +297,7 @@ class Texttable:
         """
 
         self._check_row_size(array)
-        self._header = map(str, array)
+        self._header = list(map(str, array))
 
     def add_row(self, array):
         """Add a row in the rows stack
@@ -332,7 +328,7 @@ class Texttable:
         #     usable code for python 2.1
         if header:
             if hasattr(rows, '__iter__') and hasattr(rows, 'next'):
-                self.header(rows.next())
+                self.header(next(rows))
             else:
                 self.header(rows[0])
                 rows = rows[1:]
@@ -376,7 +372,7 @@ class Texttable:
         try:
             f = float(x)
         except:
-            if type(x) is unicode:
+            if type(x) is str:
                 return x
             else:
                 return str(x)
@@ -391,7 +387,7 @@ class Texttable:
         elif dtype == 'e':
             return '%.*e' % (n, f)
         elif dtype == 't':
-            if type(x) is unicode:
+            if type(x) is str:
                 return x
             else:
                 return str(x)
@@ -414,8 +410,8 @@ class Texttable:
         if not self._row_size:
             self._row_size = len(array)
         elif self._row_size != len(array):
-            raise ArraySizeError, "array should contain %d elements" \
-                % self._row_size
+            raise ArraySizeError("array should contain %d elements" \
+                % self._row_size)
 
     def _has_vlines(self):
         """Return a boolean, if vlines are required or not
@@ -466,7 +462,7 @@ class Texttable:
         s = "%s%s%s" % (horiz, [horiz, self._char_corner][self._has_vlines()],
             horiz)
         # build the line
-        l = string.join([horiz * n for n in self._width], s)
+        l = s.join([horiz * n for n in self._width])
         # add border if needed
         if self._has_border():
             l = "%s%s%s%s%s\n" % (self._char_corner, horiz, l, horiz,
@@ -490,12 +486,12 @@ class Texttable:
         for line in cell_lines:
             length = 0
             parts = line.split('\t')
-            for part, i in zip(parts, range(1, len(parts) + 1)):
+            for part, i in zip(parts, list(range(1, len(parts) + 1))):
                 for attr in bcolors_public_props():
                     part = part.replace(getattr(bcolors, attr), '')
                 length = length + len(part)
                 if i < len(parts):
-                    length = (length/8 + 1) * 8
+                    length = (length//8 + 1) * 8
             maxi = max(maxi, length)
         return maxi
 
@@ -513,7 +509,7 @@ class Texttable:
         if self._header:
             maxi = [ self._len_cell(x) for x in self._header ]
         for row in self._rows:
-            for cell,i in zip(row, range(len(row))):
+            for cell,i in zip(row, list(range(len(row)))):
                 try:
                     maxi[i] = max(maxi[i], self._len_cell(cell))
                 except (TypeError, IndexError):
@@ -522,7 +518,7 @@ class Texttable:
         length = reduce(lambda x,y: x+y, maxi)
         if self._max_width and length + items * 3 + 1 > self._max_width:
             max_lengths = maxi
-            maxi = [(self._max_width - items * 3 -1) / items \
+            maxi = [(self._max_width - items * 3 -1) // items \
                 for n in range(items)]
 
             # free space to distribute
@@ -619,8 +615,8 @@ class Texttable:
                 if align == "r":
                     out += "%s " % (fill * space + cell_line)
                 elif align == "c":
-                    out += "%s " % (fill/2 * space + cell_line \
-                            + (fill/2 + fill%2) * space)
+                    out += "%s " % (fill//2 * space + cell_line \
+                            + (fill//2 + fill%2) * space)
                 else:
                     out += "%s " % (cell_line + fill * space)
                 if length < len(line):
@@ -648,12 +644,12 @@ class Texttable:
                     if not lost_color:
                         lost_color = attr
             for c in cell.split('\n'):
-                if type(c) is not unicode:
+                if type(c) is not str:
                     try:
-                        c = unicode(c, 'utf')
-                    except UnicodeDecodeError, strerror:
+                        c = str(c, 'utf')
+                    except UnicodeDecodeError as strerror:
                         sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
-                        c = unicode(c, 'utf', 'replace')
+                        c = str(c, 'utf', 'replace')
                 try:
                     array.extend(
                         [get_color_string(
@@ -664,14 +660,14 @@ class Texttable:
                 except AttributeError:
                     array.extend(textwrap.wrap(c, width))
             line_wrapped.append(array)
-        max_cell_lines = reduce(max, map(len, line_wrapped))
+        max_cell_lines = reduce(max, list(map(len, line_wrapped)))
         for cell, valign in zip(line_wrapped, self._valign):
             if isheader:
                 valign = "t"
             if valign == "m":
                 missing = max_cell_lines - len(cell)
-                cell[:0] = [""] * (missing / 2)
-                cell.extend([""] * (missing / 2 + missing % 2))
+                cell[:0] = [""] * (missing // 2)
+                cell.extend([""] * (missing // 2 + missing % 2))
             elif valign == "b":
                 cell[:0] = [""] * (max_cell_lines - len(cell))
             else:
@@ -685,7 +681,7 @@ if __name__ == '__main__':
     table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", "Nickname"],
                      ["Mr\nXavier\nHuon", 32, "Xav'"],
                      [get_color_string(bcolors.BLUE,"Mr\nBaptiste\nClement"), 1, get_color_string(bcolors.RED,"Baby")] ])
-    print table.draw() + "\n"
+    print(table.draw() + "\n")
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
@@ -700,4 +696,4 @@ if __name__ == '__main__':
                     ["efghijk", 67.5434, .654,  89.6,  12800000000000000000000.00023],
                     ["lmn",     5e-78,   5e-78, 89.4,  .000000000000128],
                     ["opqrstu", .023,    5e+78, 92.,   12800000000000000000000]])
-    print table.draw()
+    print(table.draw())
