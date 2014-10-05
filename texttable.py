@@ -375,7 +375,10 @@ class Texttable:
             if type(x) is str:
                 return x
             else:
-                return str(x)
+                if x is None:
+                    return str(x)
+                else:
+                    return str(x.encode('utf-8'))
 
         n = self._precision
         dtype = self._dtype[i]
@@ -390,7 +393,10 @@ class Texttable:
             if type(x) is str:
                 return x
             else:
-                return str(x)
+                if x is None:
+                    return str(x)
+                else:
+                    return str(x.encode('utf-8'))
         else:
             if f - round(f) == 0:
                 if abs(f) > 1e8:
