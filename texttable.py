@@ -130,13 +130,15 @@ class ArraySizeError(Exception):
         return self.msg
 
 class bcolors:
-    PURPLE = '\033[95m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    ENDC = '\033[0m'
+    PURPLE = '\x1b[95m'
+    BLUE = '\x1b[94m'
+    GREEN = '\x1b[92m'
+    YELLOW = '\x1b[93m'
+    RED = '\x1b[91m'
+    ENDC = '\x1b[0m'
     WHITE = ''
+    BOLD = '\x1b[1m'
+    UNDERLINE = '\x1b[4m'
 
 def get_color_string(type, string):
     end = bcolors.ENDC
@@ -663,9 +665,9 @@ if __name__ == '__main__':
     table = Texttable()
     table.set_cols_align(["l", "r", "c"])
     table.set_cols_valign(["t", "m", "b"])
-    table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", "Nickname"],
-                     ["Mr\nXavier\nHuon", 32, "Xav'"],
-                     [get_color_string(bcolors.BLUE,"Mr\nBaptiste\nClement"), 1, get_color_string(bcolors.RED,"Baby")] ])
+    table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", get_color_string(bcolors.UNDERLINE, "Nickname")],
+                     ["Mr\n" + get_color_string(bcolors.BOLD, "Xavier\nHuon"), 32, "Xav'"],
+                     [get_color_string(bcolors.BLUE,get_color_string(bcolors.BOLD, "Mr\nBaptiste") + "\n" + get_color_string(bcolors.UNDERLINE, "Clement")), 1, get_color_string(bcolors.RED,"Baby")] ])
     print(table.draw() + "\n")
 
     table = Texttable()
