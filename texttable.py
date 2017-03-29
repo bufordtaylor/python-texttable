@@ -628,15 +628,15 @@ class Texttable:
                 c = "".join(ansi_keep) + c
                 ansi_keep = []
                 extra_width = 0
-                for a in re.findall(r'\x1b[^m]*m', cell):
+                for a in re.findall(r'\x1b[^m]*m', c):
                     extra_width += len(a)
-                    if a == "\033[0m":
-                        if len(a) > 0:
+                    if a == '\x1b[0m':
+                        if len(ansi_keep) > 0:
                             ansi_keep.pop()
                     else:
                         ansi_keep.append(a)
-                c = c + "\033[0m" * len(ansi_keep)
-                extra_width += len("\033[0m" * len(ansi_keep))
+                c = c + '\x1b[0m' * len(ansi_keep)
+                extra_width += len('\x1b[0m' * len(ansi_keep))
                 if type(c) is not str:
                     try:
                         c = str(c, 'utf')
