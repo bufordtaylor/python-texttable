@@ -90,6 +90,7 @@ Brian Peterson:
     - better handling of unicode errors
 """
 
+import re
 import math
 import sys
 import string
@@ -129,16 +130,15 @@ class ArraySizeError(Exception):
         return self.msg
 
 class bcolors:
-    PURPLE = '\033[95m'
-    BLUE = '\033[94m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    ENDC = '\033[0m'
+    PURPLE = '\x1b[95m'
+    BLUE = '\x1b[94m'
+    GREEN = '\x1b[92m'
+    YELLOW = '\x1b[93m'
+    RED = '\x1b[91m'
+    ENDC = '\x1b[0m'
     WHITE = ''
-
-def bcolors_public_props():
-    return (name for name in dir(bcolors) if not name.startswith('_'))
+    BOLD = '\x1b[1m'
+    UNDERLINE = '\x1b[4m'
 
 def get_color_string(type, string):
     end = bcolors.ENDC
@@ -486,8 +486,7 @@ class Texttable:
         cell, such like newlines and tabs
         """
 
-        for attr in bcolors_public_props():
-            cell = cell.replace(getattr(bcolors, attr), '').replace(bcolors.ENDC,'')
+        cell = re.compile(r'\x1b[^m]*m').sub('', cell)
 
         cell_lines = cell.split('\n')
         maxi = 0
@@ -495,8 +494,6 @@ class Texttable:
             length = 0
             parts = line.split('\t')
             for part, i in zip(parts, list(range(1, len(parts) + 1))):
-                for attr in bcolors_public_props():
-                    part = part.replace(getattr(bcolors, attr), '')
                 length = length + len(part)
                 if i < len(parts):
                     length = (length//8 + 1) * 8
@@ -601,23 +598,8 @@ class Texttable:
             for cell, width, align in zip(line, self._width, self._align):
                 length += 1
                 cell_line = cell[i]
-                lost_color = bcolors.WHITE
-                original_cell = cell_line
-                for attr in bcolors_public_props():
-                    cell_line = cell_line.replace(
-                        getattr(bcolors, attr), '').replace(bcolors.ENDC,''
-                    )
-                    if cell_line.replace(bcolors.ENDC,'') != original_cell.replace(
-                            bcolors.ENDC,'') and attr != 'ENDC':
-                        if not lost_color:
-                            lost_color = attr
-                fill = width - len(cell_line)
-                try:
-                    cell_line = get_color_string(
-                        getattr(bcolors, lost_color),cell_line
-                    )
-                except AttributeError:
-                    pass
+
+                fill = width - len(re.compile(r'\x1b[^m]*m').sub('', cell_line))
                 if isheader:
                     align = "c"
                 if align == "r":
@@ -643,30 +625,27 @@ class Texttable:
         for cell, width in zip(line, self._width):
             array = []
             original_cell = cell
-            lost_color = bcolors.WHITE
-            for attr in bcolors_public_props():
-                cell = cell.replace(
-                    getattr(bcolors, attr), '').replace(bcolors.ENDC,'')
-                if cell.replace(bcolors.ENDC,'') != original_cell.replace(
-                        bcolors.ENDC,'') and attr != 'ENDC':
-                    if not lost_color:
-                        lost_color = attr
+            ansi_keep = []
             for c in cell.split('\n'):
+                c = "".join(ansi_keep) + c
+                ansi_keep = []
+                extra_width = 0
+                for a in re.findall(r'\x1b[^m]*m', c):
+                    extra_width += len(a)
+                    if a == '\x1b[0m':
+                        if len(ansi_keep) > 0:
+                            ansi_keep.pop()
+                    else:
+                        ansi_keep.append(a)
+                c = c + '\x1b[0m' * len(ansi_keep)
+                extra_width += len('\x1b[0m' * len(ansi_keep))
                 if type(c) is not str:
                     try:
                         c = str(c, 'utf')
                     except UnicodeDecodeError as strerror:
                         sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
                         c = str(c, 'utf', 'replace')
-                try:
-                    array.extend(
-                        [get_color_string(
-                            getattr(bcolors, lost_color),x
-                            ) for x in  textwrap.wrap(c, width)
-                        ]
-                    )
-                except AttributeError:
-                    array.extend(textwrap.wrap(c, width))
+                array.extend(textwrap.wrap(c, width + extra_width))
             line_wrapped.append(array)
         max_cell_lines = reduce(max, list(map(len, line_wrapped)))
         for cell, valign in zip(line_wrapped, self._valign):
@@ -686,9 +665,9 @@ if __name__ == '__main__':
     table = Texttable()
     table.set_cols_align(["l", "r", "c"])
     table.set_cols_valign(["t", "m", "b"])
-    table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", "Nickname"],
-                     ["Mr\nXavier\nHuon", 32, "Xav'"],
-                     [get_color_string(bcolors.BLUE,"Mr\nBaptiste\nClement"), 1, get_color_string(bcolors.RED,"Baby")] ])
+    table.add_rows([ [get_color_string(bcolors.GREEN, "Name Of Person"), "Age", get_color_string(bcolors.UNDERLINE, "Nickname")],
+                     ["Mr\n" + get_color_string(bcolors.BOLD, "Xavier\nHuon"), 32, "Xav'"],
+                     [get_color_string(bcolors.BLUE,get_color_string(bcolors.BOLD, "Mr\nBaptiste") + "\n" + get_color_string(bcolors.UNDERLINE, "Clement")), 1, get_color_string(bcolors.RED,"Baby")] ])
     print(table.draw() + "\n")
 
     table = Texttable()
